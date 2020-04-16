@@ -5,26 +5,25 @@
         class="bar"
         :style="{
           'background-color': color,
-          width: `${time >= 60 ? 100 : (time / 60) * 100}%`
+          width: `${time >= 60 || time === 0 ? 100 : (time / 60) * 100}%`
         }"
       ></div>
     </div>
     <div class="btns">
       <fa class="icon" icon="adjust" @click="isDark = !isDark" />
       <fa class="icon" icon="file-download" @click="generate" />
-      <a href="https://brunch.co.kr/@skykamja24/392">
-        <fa class="icon" icon="user-circle" />
-      </a>
       <fa class="icon" icon="question" @click="isQuestionOpen = !isQuestionOpen" />
     </div>
-    <div
-      v-if="isQuestionOpen"
-      class="question"
-    >It is an editor that can be written without stopping. Stop typing and after 60 seconds, everything disappears. If you want to save, press the Save button at the bottom. Be careful because the deleted text cannot be reversed.</div>
+    <transition name="fade">
+      <div
+        v-if="isQuestionOpen"
+        class="question"
+      >작성을 시작하면 60초의 시간이 조금씩 줄어듭니다. 타이핑을 하면 시간이 다시 늘어납니다. 시간이 모두 사라지면 작성한 글이 모두 사라져버리니, 꼭 저장하세요.</div>
+    </transition>
     <textarea
       :style="{ opacity: opacity, filter: `blur(${blur}px)` }"
       v-model="text"
-      placeholder="Don't stop writing until finish."
+      placeholder="끝날 때까지 멈추지 말고 작성하세요."
       @keyup="type"
     ></textarea>
   </main>
@@ -44,7 +43,7 @@ export default {
       isStart: false,
       isDark: false,
       isQuestionOpen: false,
-      timer: null
+      timer: null,
     };
   },
   methods: {
@@ -71,8 +70,12 @@ export default {
         this.color = "#d6d510";
       } else if (this.time >= 20) {
         this.color = "#d68310";
-      } else {
+      } else if (this.time > 0){
         this.color = "#d61010";
+      } else {
+        this.color = 'gray';
+        this.opacity = 1;
+        this.blur = 0;
       }
     },
     type() {
@@ -86,7 +89,9 @@ export default {
         clearInterval(this.timer);
         this.isStart = false;
       }
-      this.time = 60;
+      if (this.time < 60) {
+        this.time += 1;
+      }
     },
     generate() {
       const doc = new Document();
@@ -103,11 +108,12 @@ export default {
 </script>
 <style lang="scss">
 $dark: #171719;
+$icon: #48484e;
 main {
   height: 100vh;
   overflow: hidden;
   .icon {
-    color: $dark;
+    color: $icon;
   }
   &.dark {
     background-color: $dark;
@@ -160,6 +166,7 @@ main {
   border-radius: 10px;
   padding: 15px;
   z-index: 1;
+  font-size: 12px;
   word-break: keep-all;
   right: 10px;
   width: calc(100% - 20px);
@@ -168,12 +175,13 @@ main {
 }
 textarea {
   width: calc(100% - 30px);
-  max-width: 900px;
-  margin: 15px;
+  max-width: 850px;
+  margin: 15px auto;
   padding: 10px 15px;
   box-sizing: border-box;
   box-shadow: none;
   height: 82vh;
+  display: block;
   border: none;
   resize: none;
   outline: none;
@@ -194,6 +202,14 @@ textarea {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     background-color: #555;
   }
+  &:focus {
+    color: #15ad5c;
+    text-shadow: 0px 0px 0px #555555;
+    -webkit-text-fill-color: transparent;
+  }
+  &::selection {
+    background-color: #15ad5c;
+  }
 }
 .btns {
   position: fixed;
@@ -206,5 +222,12 @@ textarea {
     float: right;
     margin: 10px 15px;
   }
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
