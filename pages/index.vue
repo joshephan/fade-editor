@@ -5,21 +5,27 @@
         class="bar"
         :style="{
           'background-color': color,
-          width: `${time >= 30 ? 100 : (time / 30) * 100}%`
+          width: `${time >= 60 ? 100 : (time / 60) * 100}%`
         }"
       ></div>
     </div>
     <div class="btns">
       <fa class="icon" icon="adjust" @click="isDark = !isDark" />
       <fa class="icon" icon="file-download" @click="generate" />
-      <a href="https://brunch.co.kr/@skykamja24">
+      <a href="https://brunch.co.kr/@skykamja24/392">
         <fa class="icon" icon="user-circle" />
       </a>
+      <fa class="icon" icon="question" @click="isQuestionOpen = !isQuestionOpen" />
     </div>
+    <div
+      v-if="isQuestionOpen"
+      class="question"
+    >It is an editor that can be written without stopping. Stop typing and after 60 seconds, everything disappears. If you want to save, press the Save button at the bottom. Be careful because the deleted text cannot be reversed.</div>
     <textarea
       :style="{ opacity: opacity, filter: `blur(${blur}px)` }"
       v-model="text"
       placeholder="Don't stop writing until finish."
+      @keyup="type"
     ></textarea>
   </main>
 </template>
@@ -30,24 +36,22 @@ import { saveAs } from "file-saver";
 export default {
   data() {
     return {
-      time: 30,
-      color: "#26FF8B",
+      time: 60,
+      color: "#15ad5c",
       text: "",
       opacity: 1,
       blur: 0,
       isStart: false,
-      isDark: false
+      isDark: false,
+      isQuestionOpen: false,
+      timer: null
     };
-  },
-  watch: {
-    text(to, from) {
-      if (to.length !== from.length) {
-        this.type();
-      }
-    }
   },
   methods: {
     countDown() {
+      if (!this.isStart) {
+        return false;
+      }
       if (this.time > 0) {
         this.time -= 0.03;
       } else {
@@ -55,27 +59,34 @@ export default {
         this.text = "";
         this.isStart = false;
       }
-      this.blur = 2 - this.time / 15;
-      this.opacity = this.time / 30;
+      this.blur = 2 - this.time / 30;
+      this.opacity = this.time / 60;
     },
     colorChange() {
-      if (this.time >= 25) {
-        this.color = "#26FF8B";
-      } else if (this.time >= 15) {
-        this.color = "#FFD954";
+      if (this.time >= 50) {
+        this.color = "#15ad5c";
+      } else if (this.time >= 40) {
+        this.color = "#45d610";
+      } else if (this.time >= 30) {
+        this.color = "#d6d510";
+      } else if (this.time >= 20) {
+        this.color = "#d68310";
       } else {
-        this.color = "#FF4F5A";
+        this.color = "#d61010";
       }
     },
     type() {
       if (!this.isStart) {
         this.isStart = true;
-        setInterval(() => {
+        this.timer = setInterval(() => {
           this.countDown();
           this.colorChange();
         }, 30);
+      } else if (this.text.length === 0) {
+        clearInterval(this.timer);
+        this.isStart = false;
       }
-      this.time = 30;
+      this.time = 60;
     },
     generate() {
       const doc = new Document();
@@ -91,7 +102,7 @@ export default {
 };
 </script>
 <style lang="scss">
-$dark: #333333;
+$dark: #171719;
 main {
   height: 100vh;
   overflow: hidden;
@@ -118,6 +129,9 @@ main {
         background-color: rgb(99, 99, 99);
       }
     }
+    .question {
+      background-color: #353546;
+    }
     .icon {
       color: #eeeeee;
     }
@@ -139,6 +153,19 @@ main {
     font-size: 12px;
   }
 }
+.question {
+  position: fixed;
+  bottom: 58px;
+  background-color: $dark;
+  border-radius: 10px;
+  padding: 15px;
+  z-index: 1;
+  word-break: keep-all;
+  right: 10px;
+  width: calc(100% - 20px);
+  max-width: 300px;
+  color: white;
+}
 textarea {
   width: calc(100% - 30px);
   max-width: 900px;
@@ -146,7 +173,7 @@ textarea {
   padding: 10px 15px;
   box-sizing: border-box;
   box-shadow: none;
-  height: 90vh;
+  height: 82vh;
   border: none;
   resize: none;
   outline: none;
