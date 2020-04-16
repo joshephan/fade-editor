@@ -23,6 +23,7 @@
     "sass-loader": "^8.0.2"
   },
   "devDependencies": {
+    "@nuxtjs/google-analytics": "^2.2.3",
     "docx": "^5.0.2"
   }
 }

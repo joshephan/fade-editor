@@ -38,7 +38,11 @@ export default {
   /*
    ** Nuxt.js dev-modules
    */
-  buildModules: [],
+  buildModules: [
+    ['@nuxtjs/google-analytics', {
+      id: 'UA-76327717-8'
+    }]
+  ],
   fontawesome: {
     component: "fa"
   },
