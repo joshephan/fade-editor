@@ -46,6 +46,7 @@ export default {
    ** Nuxt.js modules
    */
   modules: [
+    'cookie-universal-nuxt',
     [
       "nuxt-fontawesome",
       {
